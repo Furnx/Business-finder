@@ -13,7 +13,17 @@ def combine_all_leads(output_file="leads.csv"):
                 # Ensure consistent columns
                 if 'phone' not in df.columns:
                     df['phone'] = "N/A"
-                all_data.append(df)
+                if 'website' not in df.columns:
+                    df['website'] = "N/A"
+                
+                # Reorder columns for consistency
+                cols = ['name', 'phone', 'website', 'source']
+                # Add missing columns if any
+                for col in cols:
+                    if col not in df.columns:
+                        df[col] = "N/A"
+                
+                all_data.append(df[cols])
             except Exception as e:
                 print(f"Warning: Could not read {f}: {e}")
         else:

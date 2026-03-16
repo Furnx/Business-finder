@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
+from utils import is_social_only
 
 def scrape_google_maps(search_query="barbers in johannesburg"):
     chrome_options = Options()
@@ -23,14 +24,12 @@ def scrape_google_maps(search_query="barbers in johannesburg"):
             except:
                 name = "N/A"
 
-            # Try to find a phone number (often in a span with specific classes or text pattern)
+            # Try to find a phone number
             try:
-                # This is a generic attempt; Maps structure varies
                 phone = "N/A"
                 all_text = business.text.split('\n')
                 for line in all_text:
                     if any(char.isdigit() for char in line) and len(line) > 8:
-                        # Simple heuristic for phone numbers
                         if '+' in line or line.replace(' ', '').isdigit():
                             phone = line
                             break
@@ -38,22 +37,24 @@ def scrape_google_maps(search_query="barbers in johannesburg"):
                 phone = "N/A"
 
             try:
-                # Maps sometimes hides the website behind a specific link or icon
-                # Looking for any link that isn't a maps internal link
                 links = business.find_elements(By.TAG_NAME, "a")
-                website = None
+                website_link = None
                 for link in links:
                     href = link.get_attribute("href")
                     if href and "google.com/maps" not in href:
-                        website = href
+                        website_link = href
                         break
             except:
-                website = None
+                website_link = None
 
-            if website is None:
+            # Lead qualification: NO website OR SOCIAL ONLY website
+            social_link = is_social_only(website_link)
+
+            if website_link is None or social_link:
                 data.append({
                     "name": name,
                     "phone": phone,
+                    "website": social_link if social_link else "N/A",
                     "source": "google_maps"
                 })
 
@@ -66,6 +67,7 @@ def scrape_google_maps(search_query="barbers in johannesburg"):
         return []
     finally:
         driver.quit()
+
 
 if __name__ == "__main__":
     scrape_google_maps()

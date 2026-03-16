@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+from utils import is_social_only
 
 def scrape_cylex(city="johannesburg", category="barber"):
     url = f"https://www.cylex.net.za/{city}/{category}/"
@@ -24,11 +25,16 @@ def scrape_cylex(city="johannesburg", category="barber"):
 
             name = name_tag.text.strip() if name_tag else "N/A"
             phone = phone_tag.text.strip() if phone_tag else "N/A"
+            website_link = website_tag.get("href") if website_tag else None
 
-            if website_tag is None:
+            # Lead qualification: NO website OR SOCIAL ONLY website
+            social_link = is_social_only(website_link)
+
+            if website_link is None or social_link:
                 data.append({
                     "name": name,
                     "phone": phone,
+                    "website": social_link if social_link else "N/A",
                     "source": "cylex"
                 })
 
@@ -39,6 +45,7 @@ def scrape_cylex(city="johannesburg", category="barber"):
     except Exception as e:
         print(f"Error scraping Cylex: {e}")
         return []
+
 
 if __name__ == "__main__":
     scrape_cylex()
