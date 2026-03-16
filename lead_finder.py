@@ -2,29 +2,33 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-url = "DIRECTORY_PAGE_URL"
-
-response = requests.get(url)
-
-soup = BeautifulSoup(response.text, "html.parser")
-
-businesses = soup.find_all("div", class_="listing")
+urls = []
 
 data = []
 
-for business in businesses:
+for url in urls:
 
-    name = business.find("h2").text
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
 
-    phone = business.find("span", class_="phone")
+    businesses = soup.find_all("div", class_="listing")
 
-    website = business.find("a", class_="website")
+    for business in businesses:
 
-    if website is None:
-        data.append({
-            "name": name,
-            "phone": phone.text if phone else "N/A"
-        })
+        name_tag = business.find("h2")
+        phone_tag = business.find("span", class_="phone")
+        website_tag = business.find("a", class_="website")
+
+        name = name_tag.text.strip() if name_tag else "N/A"
+        phone = phone_tag.text.strip() if phone_tag else "N/A"
+
+        if website_tag is None:
+
+            data.append({
+                "name": name,
+                "phone": phone,
+                "source": url
+            })
 
 df = pd.DataFrame(data)
 
