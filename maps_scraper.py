@@ -3,12 +3,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
-from utils import is_social_only
+from utils import is_social_only, get_random_proxy
 
 def scrape_google_maps(search_query="barbers in johannesburg"):
     chrome_options = Options()
+    
+    proxy = get_random_proxy()
+    if proxy:
+        proxy_address = proxy['http'].replace("http://", "")
+        print(f"Using proxy: {proxy_address}")
+        chrome_options.add_argument(f'--proxy-server={proxy_address}')
+
     # chrome_options.add_argument("--headless") # Optional: run headless
     driver = webdriver.Chrome(options=chrome_options)
+
 
     print(f"Starting Google Maps scrape for '{search_query}'...")
     try:

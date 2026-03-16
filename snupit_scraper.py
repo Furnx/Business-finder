@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from utils import is_social_only
+from utils import is_social_only, get_random_proxy
 
 def scrape_snupit(city="johannesburg", category="barbers"):
     url = f"https://www.snupit.co.za/{city}/{category}"
@@ -10,9 +10,15 @@ def scrape_snupit(city="johannesburg", category="barbers"):
     }
 
     print(f"Starting Snupit scrape for {category} in {city}...")
+    
+    proxy = get_random_proxy()
+    if proxy:
+        print(f"Using proxy: {proxy['http']}")
+
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, proxies=proxy, timeout=10)
         response.raise_for_status()
+
         soup = BeautifulSoup(response.text, "html.parser")
         
         data = []
