@@ -2,33 +2,43 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-url = "https://www.cylex.net.za/johannesburg/barber/"
+def scrape_cylex(city="johannesburg", category="barber"):
+    url = f"https://www.cylex.net.za/{city}/{category}/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
 
-response = requests.get(url)
-soup = BeautifulSoup(response.text, "html.parser")
+    print(f"Starting Cylex scrape for {category} in {city}...")
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        data = []
+        businesses = soup.find_all("div", class_="company-card")
 
-data = []
+        for business in businesses:
+            name_tag = business.find("h2")
+            phone_tag = business.find("span", class_="phone")
+            website_tag = business.find("a", class_="website")
 
-# Inspect page to confirm selector
-businesses = soup.find_all("div", class_="company-card")
+            name = name_tag.text.strip() if name_tag else "N/A"
+            phone = phone_tag.text.strip() if phone_tag else "N/A"
 
-for business in businesses:
+            if website_tag is None:
+                data.append({
+                    "name": name,
+                    "phone": phone,
+                    "source": "cylex"
+                })
 
-    name_tag = business.find("h2")
-    phone_tag = business.find("span", class_="phone")
-    website_tag = business.find("a", class_="website")
+        df = pd.DataFrame(data)
+        df.to_csv("cylex_leads.csv", index=False)
+        print(f"Cylex: Found {len(data)} leads.")
+        return data
+    except Exception as e:
+        print(f"Error scraping Cylex: {e}")
+        return []
 
-    name = name_tag.text.strip() if name_tag else "N/A"
-    phone = phone_tag.text.strip() if phone_tag else "N/A"
-
-    if website_tag is None:
-        data.append({
-            "name": name,
-            "phone": phone,
-            "source": "cylex"
-        })
-
-df = pd.DataFrame(data)
-df.to_csv("cylex_leads.csv", index=False)
-
-print("Cylex leads saved")
+if __name__ == "__main__":
+    scrape_cylex()
