@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -51,7 +55,6 @@ def scrape_cylex(city="johannesburg", category="barber"):
     except Exception as e:
         print(f"Error scraping Cylex: {e}")
         return []
-
 
 if __name__ == "__main__":
     scrape_cylex()

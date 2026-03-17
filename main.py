@@ -1,6 +1,4 @@
-import snupit_scraper
-import cylex_scraper
-import maps_scraper
+from scrapers import snupit_scraper, cylex_scraper, maps_scraper
 import combine_data
 import time
 

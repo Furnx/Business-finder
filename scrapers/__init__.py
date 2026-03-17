@@ -1,0 +1,3 @@
+from scrapers.snupit_scraper import scrape_snupit
+from scrapers.cylex_scraper import scrape_cylex
+from scrapers.maps_scraper import scrape_google_maps
